@@ -1,0 +1,263 @@
+openapi: 3.0.1
+info:
+  title: Messaging API
+  version: 1.0.0
+paths:
+  /CreateMessage:
+    post:
+      summary: Создать сообщение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessageRequest'
+      responses:
+        '200':
+          description: ID созданного сообщения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateMessageResponse'
+
+  /CreateAttachment:
+    post:
+      summary: Создать вложение
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                contentType:
+                  type: string
+                bytes:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Временный ключ вложения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAttachmentResponse'
+
+  /CreateChat:
+    post:
+      summary: Создать чат
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatRequest'
+      responses:
+        '200':
+          description: ID чата
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateChatResponse'
+
+  /GetChatHistory:
+    get:
+      summary: Получить историю чата
+      parameters:
+        - in: query
+          name: CurrentUserId
+          schema:
+            type: string
+        - in: query
+          name: ChatId
+          schema:
+            type: string
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+        - in: query
+          name: pageNumber
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: История сообщений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatHistoryResponse'
+
+  /DownloadAttachment:
+    get:
+      summary: Скачать вложение
+      parameters:
+        - in: query
+          name: attachmentId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Файл вложения
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /ViewMessage:
+    post:
+      summary: Пометить сообщение как просмотренное
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViewMessageRequest'
+      responses:
+        '200':
+          description: ОК
+
+  /Invite:
+    post:
+      summary: Пригласить пользователей в чат
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteRequest'
+      responses:
+        '200':
+          description: Успех
+
+  /Subscribe:
+    post:
+      summary: Подписка/отписка на чат
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscribeRequest'
+      responses:
+        '200':
+          description: Успех
+
+components:
+  schemas:
+    CreateMessageRequest:
+      type: object
+      properties:
+        chatId:
+          type: string
+        UserFromId:
+          type: string
+        Attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+        Text:
+          type: string
+
+    CreateMessageResponse:
+      type: object
+      properties:
+        MessageId:
+          type: string
+
+    Attachment:
+      type: object
+      properties:
+        temporaryKey:
+          type: string
+        description:
+          type: string
+
+    CreateAttachmentResponse:
+      type: object
+      properties:
+        temporaryKey:
+          type: string
+
+    CreateChatRequest:
+      type: object
+      properties:
+        UserIds:
+          type: array
+          items:
+            type: string
+
+    CreateChatResponse:
+      type: object
+      properties:
+        chatId:
+          type: string
+
+    ChatHistoryResponse:
+      type: object
+      properties:
+        Messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+
+    Message:
+      type: object
+      properties:
+        MessageId:
+          type: string
+        AuthorId:
+          type: string
+        Text:
+          type: string
+        CreateDateTime:
+          type: string
+          format: date-time
+        IsViewed:
+          type: boolean
+        Attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentInfo'
+
+    AttachmentInfo:
+      type: object
+      properties:
+        AttachmentId:
+          type: string
+        Name:
+          type: string
+
+    ViewMessageRequest:
+      type: object
+      properties:
+        ChatId:
+          type: string
+        UserId:
+          type: string
+        MessageId:
+          type: string
+
+    InviteRequest:
+      type: object
+      properties:
+        chatId:
+          type: string
+        UsersIds:
+          type: array
+          items:
+            type: string
+
+    SubscribeRequest:
+      type: object
+      properties:
+        chatId:
+          type: string
+        status:
+          type: boolean
+        UserId:
+          type: string
+
