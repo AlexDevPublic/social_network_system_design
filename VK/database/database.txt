@@ -1,0 +1,138 @@
+https://dbdiagram.io/d/6969462dd6e030a0242f0da7
+// Docs: https://dbml.dbdiagram.io/docs
+
+// Спроектировать базу(ы) данных для социальной сети ВКонтакте:
+// •	анкеты людей (имя, описание, фото, город, интересы);
+// •	посты (описание, медиа, хэштеги, лайки, просмотры, комментарии); 
+// Хэштэги в vocabulary с vocabularyType = HashTag
+// Интересы в vocabulary с vocabularyType = Interest
+// Города в vocabulary с vocabularyType = City
+// •	личные сообщения и чаты (только текст и прочитанность сообщений);
+// •	отношения (друзья, подписчики, любовные отношения);
+// •	медиа (фото, аудио, видео).
+
+Table Accounts {
+   id guid [primary key]
+   name varchar
+   surname varchar
+   main_photo_id guid
+   city_id int
+   love_id guid
+}
+
+Ref account_love: Accounts.love_id < Accounts.id 
+
+Table AccountInterest {
+  account_id guid
+  interest_id int
+}
+
+Ref account_interest: AccountInterest.interest_id < Vocabulary.id
+
+Ref account_city: Accounts.city_id < Vocabulary.id
+
+Table Attachments {
+  id guid [primary key]
+  attachment_type int //photo/audio/video
+  name varchar
+  content_type int
+  storage_path varchar
+}
+
+Ref account_attachment: Accounts.main_photo_id < Attachments.id
+
+Table Vocabulary {
+  id int [primary key]
+  name varchar
+  type_id int
+}
+
+Table VocabularyType {
+  id int [primary key]
+  name varchar
+}
+
+Ref vocabulary_vocabylary_type: Vocabulary.type_id < VocabularyType.id
+
+Table Posts {
+  id guid [primary key]
+  description varchar (2000)
+  account_id guid
+  likes_count int
+  views_count int
+}
+
+Ref post_account: Posts.account_id < Accounts.id
+
+Table PostAttachment {
+  post_id guid
+  attachment_id guid
+}
+
+Ref post_attachment_post: PostAttachment.post_id < Posts.id
+Ref post_attachment_attachment: PostAttachment.attachment_id < Attachments.id
+
+Table PostComments {
+  id guid [primary key]
+  post_id guid
+  author_id guid
+  reply_id guid
+  description varchar (2000)
+} 
+
+Ref post_comment_post: PostComments.post_id < Posts.id
+Ref post_comment_author: PostComments.author_id < Accounts.id
+Ref post_reply: PostComments.reply_id < PostComments.id
+
+Table PostLikes {
+  post_id guid
+  account_id guid
+}
+
+Ref post_like_post: PostLikes.post_id < Posts.id
+Ref post_like_account: PostLikes.account_id < Accounts.id
+
+Table PostViews {
+  post_id guid
+  account_id guid
+}
+
+Ref post_view_post: PostViews.post_id < Posts.id
+Ref post_view_account: PostViews.account_id < Accounts.id
+
+Table Chats {
+  id guid [primary key]
+  description varchar
+  type int
+}
+
+Table ChatAccounts {
+  account_id guid
+  chat_id guid
+}
+
+Ref chat_account_account: ChatAccounts.account_id < Accounts.id
+Ref chat_account_chat: ChatAccounts.chat_id < Chats.id
+
+Table Messages {
+  id guid [primary key]
+  chat_id guid
+  message_text nvarchar(2000)
+  create_date timestamp
+  author_id guid
+  status int //sent/viewed
+}
+
+Ref message_author_account: Messages.author_id > Accounts.id
+Ref message_chat: Messages.chat_id > Chats.id
+
+Table AccountRelations {
+  account_id guid
+  related_account guid
+  type int //friend/subscriber
+}
+
+Ref account_relations_account: AccountRelations.account_id > Accounts.id
+Ref account_relations_related_account: AccountRelations.related_account > Accounts.id
+
+
